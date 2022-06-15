@@ -1,4 +1,4 @@
-package org.example.wordcount;
+package com.github.wordcount;
 
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.ExecutionEnvironment;

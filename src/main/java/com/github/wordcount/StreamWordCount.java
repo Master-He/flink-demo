@@ -1,4 +1,4 @@
-package org.example.wordcount;
+package com.github.wordcount;
 
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -31,7 +31,7 @@ public class StreamWordCount {
         // 5. 求和
         DataStream<Tuple2<String, Long>> result = wordAndOneKS.sum(1).name("sum");
         // 6. 打印
-        result.print();
+        result.print("sum result ");
         // 7. 执行
         env.execute();
     }

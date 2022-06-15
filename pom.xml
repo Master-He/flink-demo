@@ -69,7 +69,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.example.wordcount.StreamWordCount</mainClass>
+                            <mainClass>com.github.wordcount.StreamWordCount</mainClass>
                         </manifest>
                         <manifestEntries>
                             <Class-Path>.</Class-Path>
