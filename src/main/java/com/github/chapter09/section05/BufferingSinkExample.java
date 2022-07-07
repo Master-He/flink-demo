@@ -40,7 +40,7 @@ public class BufferingSinkExample {
 
     public static class BufferingSink implements SinkFunction<Event>, CheckpointedFunction {
         private final int threshold;
-        private transient ListState<Event> checkpointedState;
+        private transient ListState<Event> checkPointedState;
         private List<Event> bufferedElements;
 
         public BufferingSink(int threshold) {
@@ -63,10 +63,10 @@ public class BufferingSinkExample {
 
         @Override
         public void snapshotState(FunctionSnapshotContext context) throws Exception {
-            checkpointedState.clear();
+            checkPointedState.clear();
             // 把当前局部变量中的所有元素写入到检查点中
             for (Event element : bufferedElements) {
-                checkpointedState.add(element);
+                checkPointedState.add(element);
             }
         }
 
@@ -76,12 +76,12 @@ public class BufferingSinkExample {
                 "buffered-elements",
                 Types.POJO(Event.class));
 
-            checkpointedState = context.getOperatorStateStore().getListState(descriptor);
+            checkPointedState = context.getOperatorStateStore().getListState(descriptor);
 
             // 如果是从故障中恢复，就将 ListState 中的所有元素添加到局部变量中
             if (context.isRestored()) {
                 System.out.println("======从故障中恢复=======");
-                for (Event element : checkpointedState.get()) {
+                for (Event element : checkPointedState.get()) {
                     bufferedElements.add(element);
                 }
             }
