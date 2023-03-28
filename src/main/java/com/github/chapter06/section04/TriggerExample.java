@@ -18,6 +18,11 @@ import org.apache.flink.streaming.api.windowing.triggers.TriggerResult;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
+/*
+* 在日常业务场景中，我们经常会开比较大的窗口来计算每个窗口的pv或者uv等数据。
+* 但窗口开的太大，会使我们看到计算结果的时间间隔变长。所以我们可以使用触发器， 来隔一段时间触发一次窗口计算。
+* 我们在代码中计算了每个url在10秒滚动窗口的pv指标，然后设置了触发器，每隔1秒钟触发一次窗口的计算。
+* */
 public class TriggerExample {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
