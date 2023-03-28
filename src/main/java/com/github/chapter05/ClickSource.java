@@ -5,6 +5,9 @@ import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import java.util.Calendar;
 import java.util.Random;
 
+/*
+ *  SourceFunction并行度只能为1，大于与会报错， 想要并行请看 ParallelSourceExample
+ */
 public class ClickSource implements SourceFunction<Event> {
     // 声明一个布尔变量，作为控制数据生成的标识位
     private Boolean running = true;

@@ -1,5 +1,6 @@
 package com.github.wordcount;
 
+import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -19,13 +20,17 @@ public class StreamWordCount {
         // 2. 读取文本流, 在192.168.0.111上运行nc -lk 7777命令
         DataStream<String> lineDSS = env.socketTextStream("192.168.0.111", 7777).name("nc");
         // 3. 转换数据格式
+
+        TypeHint<Tuple2<String, Long>> typeHint = new TypeHint<Tuple2<String, Long>>() {};
         DataStream<Tuple2<String, Long>> wordAndOne = lineDSS
             .flatMap((String line, Collector<String> words) -> {
                 Arrays.stream(line.split(" ")).forEach(words::collect);
             })
             .returns(Types.STRING)
             .map(word -> Tuple2.of(word, 1L))
-            .returns(Types.TUPLE(Types.STRING, Types.LONG)).name("transform");
+//            .returns(Types.TUPLE(Types.STRING, Types.LONG)).name("transform");
+            .returns(typeHint);
+
         // 4. 分组
         KeyedStream<Tuple2<String, Long>, String> wordAndOneKS = wordAndOne.keyBy(t -> t.f0);
         // 5. 求和
