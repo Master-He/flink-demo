@@ -1,4 +1,4 @@
-package com.github.chapter09.section03;
+package com.github.chapter09.section03mapstate;
 
 import com.github.chapter05.ClickSource;
 import com.github.chapter05.Event;
@@ -38,7 +38,7 @@ public class FakeWindowExample {
             );
         // 统计每 10s 窗口内，每个 url 的 pv
         stream.keyBy(data -> data.url)
-            .process(new FakeWindowFunction(10000L))
+            .process(new FakeWindowFunction(10 * 1000L))
             .print();
         env.execute();
     }
@@ -51,7 +51,7 @@ public class FakeWindowExample {
             this.windowSize = windowSize;
         }
 
-        // 声明状态，用 map 保存 pv 值（窗口 start，count）
+        // 声明状态，用 map 保存 pv 值（窗口start是key，count是value）
         MapState<Long, Long> windowPvMapState;
 
         @Override

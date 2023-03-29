@@ -1,4 +1,4 @@
-package com.github.chapter06.section04;
+package com.github.chapter06.section04trigger;
 
 import com.github.chapter05.ClickSource;
 import com.github.chapter05.Event;

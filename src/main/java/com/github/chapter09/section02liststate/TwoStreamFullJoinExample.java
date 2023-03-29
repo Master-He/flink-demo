@@ -1,4 +1,4 @@
-package com.github.chapter09.section02;
+package com.github.chapter09.section02liststate;
 
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;

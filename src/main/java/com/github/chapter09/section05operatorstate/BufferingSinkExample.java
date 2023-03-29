@@ -1,4 +1,4 @@
-package com.github.chapter09.section05;
+package com.github.chapter09.section05operatorstate;
 
 import com.github.chapter05.ClickSource;
 import com.github.chapter05.Event;

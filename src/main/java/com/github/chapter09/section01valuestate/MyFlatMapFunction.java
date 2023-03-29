@@ -1,4 +1,4 @@
-package com.github.chapter09.section01;
+package com.github.chapter09.section01valuestate;
 
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.state.ValueState;

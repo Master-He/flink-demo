@@ -1,4 +1,4 @@
-package com.github.chapter06.section03;
+package com.github.chapter06.section03aggregation;
 
 import com.github.chapter05.ClickSource;
 import com.github.chapter05.Event;

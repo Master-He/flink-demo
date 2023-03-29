@@ -1,4 +1,4 @@
-package com.github.chapter09.section04;
+package com.github.chapter09.section04aggregatingstate;
 
 import com.github.chapter05.ClickSource;
 import com.github.chapter05.Event;
@@ -52,9 +52,6 @@ public class AverageTimestampExample {
 
         @Override
         public void open(Configuration parameters) throws Exception {
-
-
-
             avgTsAggState = getRuntimeContext().getAggregatingState(
                 new AggregatingStateDescriptor<Event, Tuple2<Long, Long>, Long>(
                     "avg-ts",

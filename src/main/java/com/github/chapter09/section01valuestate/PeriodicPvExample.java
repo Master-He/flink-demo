@@ -1,21 +1,19 @@
-package com.github.chapter09.section01;
+package com.github.chapter09.section01valuestate;
 
 import com.github.chapter05.ClickSource;
 import com.github.chapter05.Event;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
 
-import java.sql.Timestamp;
-
-public class PeriodicPvExampleProcessTime {
+public class PeriodicPvExample {
 
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -40,7 +38,7 @@ public class PeriodicPvExampleProcessTime {
 
     // 注册定时器，周期性输出 pv
     public static class PeriodicPvResult extends KeyedProcessFunction<String, Event, String> {
-        // 定义两个状态，保存当前PV值，以及定时器时间戳
+        // 定义两个状态，保存当前 pv 值，以及定时器时间戳
         ValueState<Long> countState;
         ValueState<Long> timerTsState;
 
@@ -61,15 +59,15 @@ public class PeriodicPvExampleProcessTime {
             }
             // 注册定时器
             if (timerTsState.value() == null) {
-                long currentTimeMillis = System.currentTimeMillis();
-                ctx.timerService().registerProcessingTimeTimer(currentTimeMillis + 10 * 1000L);
-                timerTsState.update(currentTimeMillis + 10 * 1000L);
+                ctx.timerService().registerEventTimeTimer(value.timestamp + 10 * 1000L);
+                timerTsState.update(value.timestamp + 10 * 1000L);
             }
         }
 
         @Override
         public void onTimer(long timestamp, OnTimerContext ctx, Collector<String> out) throws Exception {
-            out.collect(ctx.getCurrentKey() + " pv: " + countState.value() + " timestamp: " + new Timestamp(timestamp));
+            out.collect(ctx.getCurrentKey() + " pv: " + countState.value());
+            // 清空状态
             timerTsState.clear();
         }
     }
