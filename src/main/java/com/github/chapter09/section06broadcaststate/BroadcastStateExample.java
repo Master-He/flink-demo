@@ -1,4 +1,4 @@
-package com.github.chapter09.section06;
+package com.github.chapter09.section06broadcaststate;
 
 import org.apache.flink.api.common.state.BroadcastState;
 import org.apache.flink.api.common.state.MapStateDescriptor;
@@ -30,10 +30,12 @@ public class BroadcastStateExample {
                 new Pattern("login", "pay"),
                 new Pattern("login", "buy")
             );
-        // 定义广播状态的描述器，创建广播流
+        // 定义广播状态的描述器，创建广播流,  key是void, value是pojo类
         MapStateDescriptor<Void, Pattern> bcStateDescriptor = new MapStateDescriptor<>(
             "patterns", Types.VOID, Types.POJO(Pattern.class));
+
         BroadcastStream<Pattern> bcPatterns = patternStream.broadcast(bcStateDescriptor);
+
         // 将事件流和广播流连接起来，进行处理
         DataStream<Tuple2<String, Pattern>> matches = actionStream
             .keyBy(data -> data.userId)
