@@ -18,7 +18,7 @@ public class StreamWordCount {
         // 1. 创建流式执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         // 2. 读取文本流, 在192.168.0.111上运行nc -lk 7777命令
-        DataStream<String> lineDSS = env.socketTextStream("192.168.0.111", 7777).name("nc");
+        DataStream<String> lineDSS = env.socketTextStream("localhost", 7777).name("nc");
         // 3. 转换数据格式
 
         TypeHint<Tuple2<String, Long>> typeHint = new TypeHint<Tuple2<String, Long>>() {};
