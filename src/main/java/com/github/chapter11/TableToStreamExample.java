@@ -23,7 +23,7 @@ public class TableToStreamExample {
                 );
         // 获取表环境
         StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
-        // 将数据流转换成表
+        // 将数据流转换成表 （将流定义到表，但是还不是真表，临时的视图，因为没有具体地写到磁盘）
         tableEnv.createTemporaryView("EventTable", eventStream);
 
         // 查询 Alice 的访问 url 列表
@@ -33,7 +33,7 @@ public class TableToStreamExample {
 
         // 将表转换成数据流，在控制台打印输出
         tableEnv.toDataStream(aliceVisitTable).print("alice visit");
-        tableEnv.toChangelogStream(urlCountTable).print("count");
+        tableEnv.toChangelogStream(urlCountTable).print("count"); // 用的是group by ，count(url)，而且还没有窗口， 所以用toChangelogStream()
         // 执行程序
         env.execute();
     }

@@ -10,7 +10,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
 import static org.apache.flink.table.api.Expressions.$;
 
-public class AppendQueryExample {
+public class WindowTopNExample {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env =
                 StreamExecutionEnvironment.getExecutionEnvironment();
@@ -43,24 +43,29 @@ public class AppendQueryExample {
                 eventStream,
                 $("user"),
                 $("url"),
-                $("timestamp").rowtime().as("ts")
-                // 将 timestamp 指定为事件时间，并命名为 ts
+                $("timestamp").rowtime().as("ts")   // 将 timestamp 指定为事件时间，并命名为 ts
         );
         // 为方便在 SQL 中引用，在环境中注册表 EventTable
         tableEnv.createTemporaryView("EventTable", eventTable);
-        // 设置 1 小时滚动窗口，执行 SQL 统计查询
-        Table result = tableEnv.sqlQuery(
-                "SELECT " +
-                        "user, " +
-                        "window_end AS endT, " +         // 窗口结束时间
-                        "COUNT(url) AS cnt " +         // 统计 url 访问次数
-                        "FROM TABLE( " +
-                        "TUMBLE( TABLE EventTable, " +         // 1 小时滚动窗口
-                        "DESCRIPTOR(ts), " +
-                        "INTERVAL '1' HOUR)) " +
-                        "GROUP BY user, window_start, window_end "
-        );
-        // 因为结果是没有动态更新的，根据窗口分组的。所以可直接用toDataStream
+        // 定义子查询，进行窗口聚合，得到包含窗口信息、用户以及访问次数的结果表
+        String subQuery =
+                "SELECT window_start, window_end, user, COUNT(url) as cnt " +
+                        "FROM TABLE ( " +
+                        "TUMBLE( TABLE EventTable, DESCRIPTOR(ts), INTERVAL '1' HOUR )) " +
+                        "GROUP BY window_start, window_end, user ";
+        // 定义 Top N 的外层查询
+        String topNQuery =
+                "SELECT * " +
+                        "FROM (" +
+                        "SELECT *, " +
+                        "ROW_NUMBER() OVER ( " +
+                        "PARTITION BY window_start, window_end " +
+                        "ORDER BY cnt desc " +
+                        ") AS row_num " +
+                        "FROM (" + subQuery + ")) " +
+                        "WHERE row_num <= 2";
+        // 执行 SQL 得到结果表
+        Table result = tableEnv.sqlQuery(topNQuery);
         tableEnv.toDataStream(result).print();
         env.execute();
     }

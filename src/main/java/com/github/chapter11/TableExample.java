@@ -21,9 +21,11 @@ public class TableExample {
                 );
         // 获取表环境
         StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
-        // 将数据流转换成表
+        // 将数据流转换成表 (这个时候的表没有注册进表环境， 还是java对象)
         Table eventTable = tableEnv.fromDataStream(eventStream);
         // 用执行 SQL 的方式提取数据
+        // 由于流中的数据本身就是定义好的 POJO 类型 Event，所以我们将流转换成表之后，
+        // 每一行数据就对应着一个 Event，而表中的列名就对应着 Event 中的属性。
         Table visitTable = tableEnv.sqlQuery("select url, user from " + eventTable);
         // 将表转换成数据流，打印输出
         tableEnv.toDataStream(visitTable).print();
