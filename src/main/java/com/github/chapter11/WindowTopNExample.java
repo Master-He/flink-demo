@@ -18,13 +18,21 @@ public class WindowTopNExample {
         // 读取数据源，并分配时间戳、生成水位线
         SingleOutputStreamOperator<Event> eventStream = env
                 .fromElements(
+                        // 前一小时
                         new Event("Alice", "./home", 1000L),
                         new Event("Bob", "./cart", 1000L),
                         new Event("Alice", "./prod?id=1", 25 * 60 * 1000L),
-                        new Event("Alice", "./prod?id=4", 55 * 60 * 1000L),
+                        new Event("Tom", "./prod?id=4", 55 * 60 * 1000L),
+                        new Event("Tom", "./prod?id=1", 25 * 60 * 1000L),
+                        new Event("Tom", "./prod?id=4", 55 * 60 * 1000L),                        new Event("Alice", "./prod?id=1", 25 * 60 * 1000L),
+                        new Event("Tom", "./prod?id=4", 55 * 60 * 1000L),
+
+                        // 后一小时
                         new Event("Bob", "./prod?id=5", 3600 * 1000L + 60 * 1000L),
+                        new Event("Bob", "./prod?id=6", 3600 * 1000L + 60 * 1000L),
                         new Event("Cary", "./home", 3600 * 1000L + 30 * 60 * 1000L),
-                        new Event("Cary", "./prod?id=7", 3600 * 1000L + 59 * 60 * 1000L)
+                        new Event("Cary", "./prod?id=7", 3600 * 1000L + 59 * 60 * 1000L),
+                        new Event("Tom", "./prod?id=7", 3600 * 1000L + 59 * 60 * 1000L)
                 )
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.<Event>forMonotonousTimestamps()
@@ -54,16 +62,17 @@ public class WindowTopNExample {
                         "TUMBLE( TABLE EventTable, DESCRIPTOR(ts), INTERVAL '1' HOUR )) " +
                         "GROUP BY window_start, window_end, user ";
         // 定义 Top N 的外层查询
+        // 开窗（Over）聚合
         String topNQuery =
                 "SELECT * " +
                         "FROM (" +
                         "SELECT *, " +
-                        "ROW_NUMBER() OVER ( " +
+                        "ROW_NUMBER() OVER ( " +  // ROW_NUMBER()是获取行号！
                         "PARTITION BY window_start, window_end " +
                         "ORDER BY cnt desc " +
                         ") AS row_num " +
                         "FROM (" + subQuery + ")) " +
-                        "WHERE row_num <= 2";
+                        "WHERE row_num <= 3";
         // 执行 SQL 得到结果表
         Table result = tableEnv.sqlQuery(topNQuery);
         tableEnv.toDataStream(result).print();

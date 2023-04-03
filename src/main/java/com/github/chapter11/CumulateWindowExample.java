@@ -10,6 +10,11 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
 import static org.apache.flink.table.api.Expressions.$;
 
+/*
+* 什么是积累窗口
+* 比如我要统计11点-12点的用户量，但是我不想等到12点后才知道结果，想每隔10分钟就知道，11点到当前时间的积累值。
+* 比如11点10分就想知道有11点-11点10分多少用户？
+* */
 public class CumulateWindowExample {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env =
@@ -56,7 +61,7 @@ public class CumulateWindowExample {
                         "FROM TABLE( " +
                         "CUMULATE( TABLE EventTable, " +         // 定义累积窗口
                         "DESCRIPTOR(ts), " +
-                        "INTERVAL '30' MINUTE, " +
+                        "INTERVAL '30' MINUTE, " +  // 输出积累的间隔
                         "INTERVAL '1' HOUR)) " +
                         "GROUP BY user, window_start, window_end "
         );
