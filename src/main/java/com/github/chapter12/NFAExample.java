@@ -13,6 +13,10 @@ import java.io.Serializable;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
+/*
+“非确定有限状态自动机”（Nondeterministic Finite Automaton，NFA）。
+这个已经由flink cep实现， 下面这个例子只是 LoginFailDetect 例子的 非CEP版本
+*/
 public class NFAExample {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env =

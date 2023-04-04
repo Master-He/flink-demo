@@ -24,10 +24,9 @@ public class OrderTimeoutDetect {
     };
 
     public static void main(String[] args) throws Exception {
-        StreamExecutionEnvironment env =
-                StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
-// 获取订单事件流，并提取时间戳、生成水位线
+        // 获取订单事件流，并提取时间戳、生成水位线
         KeyedStream<OrderEvent, String> stream = env
                 .fromElements(
                         new OrderEvent("user_1", "order_1", "create", 1000L),
@@ -47,7 +46,7 @@ public class OrderTimeoutDetect {
                                             }
                                         }))
                 .keyBy(order -> order.orderId); // 按照订单 ID 分组
-// 1. 定义 Pattern
+        // 1. 定义 Pattern
         Pattern<OrderEvent, ?> pattern = Pattern
                 .<OrderEvent>begin("create") // 首先是下单事件
                 .where(new SimpleCondition<OrderEvent>() {
@@ -64,12 +63,13 @@ public class OrderTimeoutDetect {
                     }
                 })
                 .within(Time.minutes(15)); // 限制在 15 分钟之内
-// 2. 将 Pattern 应用到流上，检测匹配的复杂事件，得到一个 PatternStream
+
+        // 2. 将 Pattern 应用到流上，检测匹配的复杂事件，得到一个 PatternStream
         PatternStream<OrderEvent> patternStream = CEP.pattern(stream, pattern);
-// 3. 将匹配到的，和超时部分匹配的复杂事件提取出来，然后包装成提示信息输出
+        // 3. 将匹配到的，和超时部分匹配的复杂事件提取出来，然后包装成提示信息输出
         SingleOutputStreamOperator<String> payedOrderStream =
                 patternStream.process(new OrderPayPatternProcessFunction());
-// 将正常匹配和超时部分匹配的处理结果流打印输出
+        // 将正常匹配和超时部分匹配的处理结果流打印输出
         payedOrderStream.print("payed");
         payedOrderStream.getSideOutput(timeoutTag).print("timeout");
         env.execute();

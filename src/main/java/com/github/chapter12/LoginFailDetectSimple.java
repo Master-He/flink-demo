@@ -17,7 +17,7 @@ import java.util.Map;
 为什么我们检测连续三次登录失败用了三个单例模式来分别定义，而没有直接指定 times(3)：因为我们需要三次登录
 失败必须是严格连续的，中间不能有登录成功的事件，而 times()默认是宽松近邻关系。
 * */
-public class LoginFailDetect {
+public class LoginFailDetectSimple {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
@@ -44,38 +44,25 @@ public class LoginFailDetect {
                 .keyBy(r -> r.userId);
         // 1. 定义 Pattern，连续的三个登录失败事件
         Pattern<LoginEvent, LoginEvent> pattern = Pattern
-                .<LoginEvent>begin("first")         // 以第一个登录失败事件开始
+                .<LoginEvent>begin("fails")         // 以第一个登录失败事件开始
                 .where(new SimpleCondition<LoginEvent>() {
                     @Override
                     public boolean filter(LoginEvent loginEvent) throws Exception {
                         return loginEvent.eventType.equals("fail");
                     }
                 })
-                .next("second")         // 接着是第二个登录失败事件
-                .where(new SimpleCondition<LoginEvent>() {
-                    @Override
-                    public boolean filter(LoginEvent loginEvent) throws Exception {
-                        return loginEvent.eventType.equals("fail");
-                    }
-                })
-                .next("third")         // 接着是第三个登录失败事件
-                .where(new SimpleCondition<LoginEvent>() {
-                    @Override
-                    public boolean filter(LoginEvent loginEvent) throws Exception {
-                        return loginEvent.eventType.equals("fail");
-                    }
-                });
+                .times(3).consecutive();
+
         // 2. 将 Pattern 应用到流上，检测匹配的复杂事件，得到一个 PatternStream
         PatternStream<LoginEvent> patternStream = CEP.pattern(stream, pattern);
 
         // 3. 将匹配到的复杂事件选择出来，然后包装成字符串报警信息输出
         patternStream.select(new PatternSelectFunction<LoginEvent, String>() {
             @Override
-            public String select(Map<String, List<LoginEvent>> map) throws
-                    Exception {
-                LoginEvent first = map.get("first").get(0);
-                LoginEvent second = map.get("second").get(0);
-                LoginEvent third = map.get("third").get(0);
+            public String select(Map<String, List<LoginEvent>> map) throws Exception {
+                LoginEvent first = map.get("fails").get(0);
+                LoginEvent second = map.get("fails").get(1);
+                LoginEvent third = map.get("fails").get(2);
                 return first.userId + " 连续三次登录失败！登录时间：" +
                         first.timestamp + ", " + second.timestamp + ", " + third.timestamp;
             }
